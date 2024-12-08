@@ -177,6 +177,41 @@ return {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
+        gopls = {},
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              disableOrganizeImports = true,
+            },
+            analysis = {
+              autoImportCompletion = true,
+              inlayHints = {
+                variableTypes = true,
+                callArgumentNames = true,
+                functionReturnTypes = true,
+                genericTypes = true,
+              },
+            },
+          },
+        },
+        ruff = {
+          settings = {
+            vim.api.nvim_create_autocmd('LspAttach', {
+              group = vim.api.nvim_create_augroup('lsp_attach_disable_ruff_hover', { clear = true }),
+              callback = function(args)
+                local client = vim.lsp.get_client_by_id(args.data.client_id)
+                if client == nil then
+                  return
+                end
+                if client.name == 'ruff' then
+                  -- Disable hover in favor of Pyright
+                  client.server_capabilities.hoverProvider = false
+                end
+              end,
+              desc = 'LSP: Disable hover capability from Ruff',
+            }),
+          },
+        },
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
